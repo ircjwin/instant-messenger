@@ -4,14 +4,12 @@ from messenger import Messenger
 
 class ServerMessenger(Messenger):
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._server_send = None
         self._server_listen = None
         super().__init__()
 
-    def setup(self):
-        print("Waiting for client...", end="", flush=True)
-
+    def setup(self) -> None:
         self._send_addr = ("127.0.0.1", 60442)
         self._listen_addr = ("127.0.0.1", 60441)
         self._server_send = socket()
@@ -24,10 +22,3 @@ class ServerMessenger(Messenger):
         self._server_listen.listen(1)
         self._send_socket, _ = self._server_send.accept()
         self._listen_socket, _ = self._server_listen.accept()
-
-        print("", end="\r")
-
-
-if __name__ == "__main__":
-    server_messenger = ServerMessenger()
-    server_messenger.run()

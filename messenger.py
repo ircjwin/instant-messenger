@@ -1,9 +1,11 @@
 import sys
+from socket import *
 from select import select
 from threading import Event, Thread
+from abc import ABCMeta, abstractmethod
 
 
-class Messenger:
+class Messenger(metaclass=ABCMeta):
     """
     Represents a socket that can send and receive messages
 
@@ -14,19 +16,21 @@ class Messenger:
             _listen_addr (tuple):  IP and Port for Server socket
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initializes a Messenger object.
 
         :param: N/A
         :return: N/A
         """
-        self._send_socket = None
-        self._listen_socket = None
-        self._send_addr = None
-        self._listen_addr = None
+        self._send_socket: socket | None = None
+        self._listen_socket: socket | None = None
+        self._send_addr: tuple | None = None
+        self._listen_addr: tuple | None = None
+        self._inbox: list | None = None
+        self._outbox: list | None = None
 
-    def close_sockets(self):
+    def close_sockets(self) -> None:
         """
         Closes sockets.
 
@@ -36,7 +40,7 @@ class Messenger:
         self._send_socket.close()
         self._listen_socket.close()
 
-    def send_msg(self, event):
+    def send_msg(self, event: Event) -> None:
         """
         Sends messages.
 
@@ -47,20 +51,11 @@ class Messenger:
             if event.is_set():
                 return
 
-            # Checks for data from client to keep messages in order
-            readable_sockets, _, _ = select([self._listen_socket], [], [], 0)
-            if self._listen_socket not in readable_sockets:
-                msg = sys.stdin.readline()
-                # Uses escape A to move cursor up one line -> '\033[1A'
-                print(f"\033[2AS: {msg}")
-                print(f"\033[1A{' ' * len(msg)}\n", end="\r")
+            if self._outbox:
+                msg = self._outbox.pop(0)
                 self._send_socket.send(msg.encode())
 
-                if msg.strip("\n") == "/q":
-                    event.set()
-                    return
-
-    def listen_msg(self, event):
+    def listen_msg(self, event: Event) -> None:
         """
         Receives messages.
 
@@ -70,34 +65,29 @@ class Messenger:
         while True:
             if event.is_set():
                 return
-            # Checks for client data to prevent recv() blocking execution
-            readable_sockets, _, _ = select([self._listen_socket], [], [], 0)
-            if self._listen_socket in readable_sockets:
-                msg = self._listen_socket.recv(2048)
-                decode_msg = msg.decode()
-                strip_msg = decode_msg.strip("\n")
-                if strip_msg == "/q":
-                    event.set()
-                    return
 
-                print(f"\r\033[1AC: {strip_msg}\n")
+            msg = self._listen_socket.recv(2048)
+            if len(msg) == 0:
+                event.set()
+                return
+            decode_msg = msg.decode()
+            self._inbox.append(decode_msg)
 
-    def setup(self):
-        raise NotImplementedError
+    @abstractmethod
+    def setup(self) -> None:
+        pass
 
-    def run(self):
+    def run(self, event: Event, inbox: list, outbox: list) -> None:
         """
         Establishes socket connection and handles termination.
 
         :param: N/A
         :return: N/A
         """
+        self._inbox = inbox
+        self._outbox = outbox
         self.setup()
 
-        print(f"Type /q to quit         \n"
-              f"Enter message to send...\n")
-
-        event = Event()
         send_thread = Thread(target=self.send_msg,
                              args=[event, ],
                              daemon=True)
@@ -106,15 +96,6 @@ class Messenger:
                                daemon=True)
         send_thread.start()
         listen_thread.start()
-        stop = event.is_set()
-
-        while not stop:
-            stop = event.is_set()
-
+        event.wait()
         self.close_sockets()
         sys.exit()
-
-
-if __name__ == "__main__":
-    messenger = Messenger()
-    messenger.run()
