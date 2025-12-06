@@ -27,8 +27,6 @@ class Messenger(metaclass=ABCMeta):
         self._listen_socket: socket | None = None
         self._send_addr: tuple | None = None
         self._listen_addr: tuple | None = None
-        self._inbox: list | None = None
-        self._outbox: list | None = None
 
     def close_sockets(self) -> None:
         """
@@ -40,61 +38,51 @@ class Messenger(metaclass=ABCMeta):
         self._send_socket.close()
         self._listen_socket.close()
 
-    def send_msg(self, event: Event) -> None:
+    def send(self, msg: str) -> None:
         """
         Sends messages.
 
-        :param event: Event object that signals termination
+        :param msg: String to send over socket.
         :return: N/A
         """
-        while True:
-            if event.is_set():
-                return
+        self._send_socket.send(msg.encode())
 
-            if self._outbox:
-                msg = self._outbox.pop(0)
-                self._send_socket.send(msg.encode())
-
-    def listen_msg(self, event: Event) -> None:
+    def listen(self, event: Event, publisher) -> None:
         """
         Receives messages.
 
         :param event: Event object that signals termination
+        :param publisher: Callback for frontend listener
         :return: N/A
         """
         while True:
             if event.is_set():
                 return
-
+            readable_sockets, _, _ = select([self._listen_socket], [], [], 0)
+            if self._listen_socket not in readable_sockets:
+                continue
             msg = self._listen_socket.recv(2048)
             if len(msg) == 0:
                 event.set()
                 return
             decode_msg = msg.decode()
-            self._inbox.append(decode_msg)
+            publisher(decode_msg)
 
     @abstractmethod
     def setup(self) -> None:
         pass
 
-    def run(self, event: Event, inbox: list, outbox: list) -> None:
+    def run(self, event: Event, publisher) -> None:
         """
         Establishes socket connection and handles termination.
 
         :param: N/A
         :return: N/A
         """
-        self._inbox = inbox
-        self._outbox = outbox
         self.setup()
-
-        send_thread = Thread(target=self.send_msg,
-                             args=[event, ],
-                             daemon=True)
-        listen_thread = Thread(target=self.listen_msg,
-                               args=[event, ],
+        listen_thread = Thread(target=self.listen,
+                               args=[event, publisher],
                                daemon=True)
-        send_thread.start()
         listen_thread.start()
         event.wait()
         self.close_sockets()
