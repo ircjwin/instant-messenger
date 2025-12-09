@@ -1,13 +1,22 @@
 # Instant Messenger
-## Description
-This is an instant messenger implemented with the Python *socket* module.
+![Static Badge](https://img.shields.io/badge/python-3.10-steelblue?style=plastic&color=dodgerblue)
+![Static Badge](https://img.shields.io/badge/textual-6.8.0-steelblue?style=plastic&color=goldenrod)
+
+This is an instant messenger application with a Textual GUI. The server runs one of the chat windows to simplify startup and limit the number of required terminals to 2.
+
+![](https://github.com/ircjwin/instant-messenger/blob/main/media/chat_window.png)
 ## Instructions
-1. Download server.py and client.py
-2. Open the root directory in two terminals
-3. Run command `python3 server.py` in the first terminal
-4. Run command `python3 client.py` in the second terminal
-## Known Issues
-1. If user (Client or Server) has started typing a message and a newly received message is printed before user hits Enter, the newly received message will append to the user's message. A module such as *curses* will likely be needed.
+### Run
+In the first terminal:
+```
+python3 app.py server
+```
+In the second terminal:
+```
+python3 app.py client
+```
+### Exit
+On each terminal, press `ctrl + q`
 ## License
 Copyright &copy; 2023 Chris "C.J." Irwin<br>
 This project is [MIT](LICENSE) licensed.
