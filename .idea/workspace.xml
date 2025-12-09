@@ -6,10 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="1f0e04c4-b863-4301-8761-5c01044b30ca" name="Changes" comment="Send, receive, and termination implemented.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/client.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/im_app.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/messenger.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/messenger.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/server.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -168,7 +165,6 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.messenger" />
-        <item itemvalue="Python.im_app" />
         <item itemvalue="Python.curse_test" />
         <item itemvalue="Python.input_test" />
         <item itemvalue="Python.test" />
